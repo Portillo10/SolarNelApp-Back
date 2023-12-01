@@ -1,3 +1,4 @@
+import { request } from "express";
 import {
   updateState,
   STATES_ENUM,
@@ -124,23 +125,33 @@ export const getDevices = async (req, res) => {
 
 export const generateId = async (req, res) => {
   try {
-    const { quantity = 36 } = req.query;
+    const { quantity = 49, numberCode = 0 } = req.query;
 
-    const idList = idGenerator(quantity);
+    let lastCode = await lastNumberCode();
+
+    if (numberCode < lastCode) {
+      return res.status(400).json({
+        msg: "El número debe ser mayor al último que se registró",
+      });
+    }
+
+    lastCode = Number(numberCode);
+
+    const idList = idGenerator(quantity, lastCode);
 
     return res.status(200).json({
       idList,
     });
   } catch (error) {
     console.log(error);
-    return res.stauts(500).json({
+    return res.status(500).json({
       msg: "Internal error",
     });
   }
 };
 
-export const repairDevice = async (req, res) => {
-  const { deviceId, replacements, observations } = req.body;
+export const repairDevice = async (req = request, res) => {
+  const { deviceId, replacements, observations, totalPrice } = req.body;
 
   try {
     const currentDevice = await deviceModel.findById(deviceId);
@@ -150,22 +161,31 @@ export const repairDevice = async (req, res) => {
     )
       return res.status(404).json({ msg: "Device can't be repaired" });
 
-    currentDevice.history.push({ replacements, observations });
-
     currentDevice.state = updateState(currentDevice.state);
 
     const replacementList = await replacementModel.find({
       _id: replacements.map((rep) => rep.replacementId),
     });
 
-    currentDevice.lastRepairPrice = calcPrice(
-      replacementList.map((rep) => {
-        const tempReplacement = replacements.find(
-          ({ replacementId }) => replacementId == rep._id
-        );
-        return { price: rep.price, quantity: tempReplacement.quantity };
-      })
-    );
+    if (totalPrice) {
+      currentDevice.lastRepairPrice = totalPrice;
+    } else {
+      currentDevice.lastRepairPrice = calcPrice(
+        replacementList.map((rep) => {
+          const tempReplacement = replacements.find(
+            ({ replacementId }) => replacementId == rep._id
+          );
+          return { price: rep.price, quantity: tempReplacement.quantity };
+        })
+      );
+    }
+
+    currentDevice.history.push({
+      replacements,
+      observations,
+      author: req.user._id,
+      repairPrice: currentDevice.lastRepairPrice
+    });
 
     await currentDevice.save();
 
@@ -178,14 +198,27 @@ export const repairDevice = async (req, res) => {
 
 export const getNumberCode = async (req, res) => {
   try {
-    const numberCode = (await deviceModel.find({}, ["numberCode"]))
-      .map((dev) => dev.numberCode)
-      .sort((a, b) => a - b);
+    const numberCode = await lastNumberCode();
 
-    if (numberCode.length > 0)
-      return res
-        .status(200)
-        .json({ numberCode: numberCode[numberCode.length - 1] + 1 });
-    else return res.status(200).json({ numberCode: 1 });
+    return res.status(200).json({ numberCode });
   } catch (error) {}
 };
+
+const lastNumberCode = async () => {
+  const numberCode = (await deviceModel.find({}, ["numberCode"]))
+    .map((dev) => dev.numberCode)
+    .sort((a, b) => a - b);
+
+  if (numberCode.length > 0) return numberCode[numberCode.length - 1] + 1;
+  else return 1;
+};
+
+// export const getHistory = async (req, res) => {
+//   const {deviceId} = req.params
+//   try {
+
+//   } catch (error) {
+//     console.log(error)
+//     return res.status(500).json({errorMsg:error.message})
+//   }
+// };

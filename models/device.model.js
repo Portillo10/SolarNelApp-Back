@@ -38,8 +38,13 @@ const deviceSchema = new mongoose.Schema({
         type: Date,
         default: new Date(),
       },
-      author: String,
+      author: {
+        required:true,
+        type: mongoose.Types.ObjectId,
+        ref:"User"
+      },
       observations: String,
+      repairPrice: Number
     },
   ],
   lastRepairPrice: { type: Number, default: 0 },

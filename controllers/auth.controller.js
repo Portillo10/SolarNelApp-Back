@@ -2,6 +2,7 @@ import { request, response } from "express";
 import { generateJWT } from "../helpers/generateJWT.js";
 import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import { toUpper } from "../helpers/general.helper.js";
 
 export const login = async (req = request, res = response) => {
   const { username, password } = req.body;
@@ -19,14 +20,16 @@ export const login = async (req = request, res = response) => {
     if(!correctPassword) return res.status(400).json({msg:"wrong credentials"})
 
     const token = await generateJWT(user._id);
-
     
-    res.cookie("token", token);
+    const { password:pass, firstname, lastname, ...userData } = user._doc;
     
-    const { password:pass, ...userData } = user._doc;
-    
-    res.status(200).json({
-      ...userData
+    return res.status(200).json({
+      userData:{
+        firstname:toUpper(firstname),
+        lastname:toUpper(lastname),
+        ...userData
+      },
+      token
     });
   } catch (error) {}
 };
@@ -35,7 +38,7 @@ export const register = async (req, res) => {
   const { userInfo } = req.body;
   try {
     const userExist = await userModel.findOne({
-      documentNumber: userInfo.documentNumber,
+      username: userInfo.username,
     });
 
     if (userExist) return res.status(204).json({ msg: "User exist" });

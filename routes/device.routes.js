@@ -1,11 +1,12 @@
 import {Router} from 'express'
 import { addDevice, generateId, getDevices, getDevice, repairDevice, updateDeviceState, getDeviceBrands, getNumberCode } from '../controllers/device.controller.js';
+import { validateJWT } from '../middlewares/validateJWT.js';
 
 const router = Router();
 
 router.post("/", addDevice)
 
-router.post("/repair", repairDevice)
+router.post("/repair", [validateJWT], repairDevice)
 
 router.get("/one/:deviceId", getDevice)
 

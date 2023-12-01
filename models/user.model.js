@@ -20,16 +20,16 @@ const schema = new mongoose.Schema({
     require: true,
     lowercase: true
   },
-  enable: {
-    type: Boolean,
-    default: true
-  },
-  phone: Number,
-  rol: {
-    type: String,
-    enum: ["ADMIN", "EMPLOYEE"]
-  },
-  documentNumber: { type: Number, require: true },
+  // enable: {
+  //   type: Boolean,
+  //   default: true
+  // },
+  // phone: Number,
+  // rol: {
+  //   type: String,
+  //   enum: ["ADMIN", "EMPLOYEE"]
+  // },
+  // documentNumber: { type: Number, require: true },
 })
 
 export default mongoose.model("User", schema)

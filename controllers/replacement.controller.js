@@ -1,3 +1,4 @@
+import { toUpper } from "../helpers/device.helper.js";
 import replacementModel from "../models/replacement.model.js";
 import replacementTypeModel from "../models/replacementType.model.js";
 
@@ -26,7 +27,7 @@ export const addReplacement = async (req, res) => {
 };
 
 export const addReplacementType = async (req, res) => {
-  const { typeDesc, replacementProp } = req.body;
+  const { typeDesc, replacementProps } = req.body;
 
   try {
     const repeatedReplacementType = await replacementTypeModel.findOne({
@@ -41,7 +42,7 @@ export const addReplacementType = async (req, res) => {
 
     const newReplacementType = new replacementTypeModel({
       typeDesc,
-      replacementProp,
+      replacementProps,
     });
 
     await newReplacementType.save();
@@ -54,16 +55,29 @@ export const addReplacementType = async (req, res) => {
 
 export const getReplacementTypes = async (req, res) => {
   try {
-    const replacementTypes = await replacementTypeModel.find({}, ["-__v"]);
+    let replacementTypes = await replacementTypeModel.find({}, ["-__v"]);
+    replacementTypes = replacementTypes.map(replacementType => {
+      let {typeDesc, replacementProps} = replacementType._doc
+      replacementProps = replacementProps.map(property => {
+        const {prop, ...rest} = property._doc
+        return {prop:toUpper(prop), ...rest}
+      })
+      return {
+        typeDesc:toUpper(typeDesc),
+        replacementProps
+      }
+    })
     return res.status(200).json(replacementTypes);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 export const getReplacements = async (req, res) => {
   try {
     const replacementList = await replacementModel.find({}, ["-__v"]);
 
-    return res.json({ replacementList });
+    return res.json(replacementList);
   } catch (error) {
     console.log(error);
   }
