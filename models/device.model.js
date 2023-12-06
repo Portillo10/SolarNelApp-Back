@@ -3,9 +3,7 @@ import mongoose from "mongoose";
 const deviceSchema = new mongoose.Schema({
   numberCode: Number,
   deviceType: {
-    // type: mongoose.Schema.Types.ObjectId,
     type: String,
-    // ref: "DeviceType",
     required: true,
   },
   customerName: String,
@@ -16,11 +14,10 @@ const deviceSchema = new mongoose.Schema({
     required: true,
   },
   state: {
-    // type: mongoose.Schema.Types.ObjectId,
     type: String,
-    // ref: "DeviceState",
+    lowercase:true,
     required: true,
-    default: "Recibido",
+    default: "recibido",
   },
   history: [
     {

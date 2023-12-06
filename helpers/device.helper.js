@@ -145,24 +145,15 @@ export const idGenerator = (quantity, lastNumberCode) => {
   return idList;
 };
 
-// (async () => console.log(
-//   await formatHistory([
-//     {
-//       replacements: [
-//         { replacementId: "654d3362f7e80d12cb9a2ea8", quantity: 1 },
-//         { replacementId: "654d4115ab77da4c53cdb7b5", quantity: 2 },
-//       ],
-//       author: "afesgbnhm",
-//       repairDate: new Date().toLocaleDateString()
+export const getRerpairedByDate = async (date) => {
+  const devices = (await deviceModel.find({state:[STATES_ENUM.Repaired, STATES_ENUM.Delivered]}, ["-__v"])).filter(device => device.history[0].repairDate.toDateString() === date.toDateString())
+  return devices
+}
 
-//     },
-//     {
-//       replacements: [
-//         { replacementId: "654d3362f7e80d12cb9a2ea8", quantity: 1 },
-//         { replacementId: "65514ef2ab77da4c53cdb7bd", quantity: 4 },
-//       ],
-//       author: "afesgbnhm",
-//       repairDate: new Date().toLocaleDateString()
-//     },
-//   ])
-// ))()
+export const getEarnings = (devices) => {
+  let earning = 0
+  for (let device of devices){
+    earning += device.lastRepairPrice
+  }
+  return earning
+}

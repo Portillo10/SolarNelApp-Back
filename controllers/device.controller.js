@@ -6,6 +6,8 @@ import {
   formatHistory,
   getAllDevices,
   idGenerator,
+  getRerpairedByDate,
+  getEarnings,
 } from "../helpers/device.helper.js";
 import deviceModel from "../models/device.model.js";
 import deviceBrandModel from "../models/deviceBrand.model.js";
@@ -167,7 +169,7 @@ export const repairDevice = async (req = request, res) => {
       _id: replacements.map((rep) => rep.replacementId),
     });
 
-    if (totalPrice) {
+    if (totalPrice >= 0) {
       currentDevice.lastRepairPrice = totalPrice;
     } else {
       currentDevice.lastRepairPrice = calcPrice(
@@ -180,16 +182,18 @@ export const repairDevice = async (req = request, res) => {
       );
     }
 
-    currentDevice.history.push({
+    currentDevice.history.unshift({
       replacements,
       observations,
       author: req.user._id,
-      repairPrice: currentDevice.lastRepairPrice
+      repairPrice: currentDevice.lastRepairPrice,
     });
 
     await currentDevice.save();
 
-    return res.status(200).json({ currentDevice });
+    const { history } = currentDevice._doc;
+
+    return res.status(200).json({ repair: history[0] });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Internal error" });
@@ -213,12 +217,30 @@ const lastNumberCode = async () => {
   else return 1;
 };
 
-// export const getHistory = async (req, res) => {
-//   const {deviceId} = req.params
-//   try {
+export const getDeviceStadistics = async (req, res) => {
+  try {
+    const pendingRepairs = await deviceModel.find(
+      { state: STATES_ENUM.Received },
+      ["-history", "-__v"]
+    );
+    const readyDevices = await deviceModel.find(
+      { state: STATES_ENUM.Repaired },
+      ["-history", "-__v"]
+    );
+    const repairedToday = await getRerpairedByDate(new Date());
 
-//   } catch (error) {
-//     console.log(error)
-//     return res.status(500).json({errorMsg:error.message})
-//   }
-// };
+    const earningsToday = getEarnings(repairedToday.filter(device => device.state ===STATES_ENUM.Delivered))
+
+    return res
+      .status(200)
+      .json({
+        pending: pendingRepairs.length,
+        ready: readyDevices.length,
+        repairedToday: repairedToday.length,
+        earningsToday
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
