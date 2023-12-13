@@ -8,6 +8,8 @@ import {
   idGenerator,
   getRerpairedByDate,
   getEarnings,
+  getLastWeekRepairs,
+  getWeekStadistics,
 } from "../helpers/device.helper.js";
 import deviceModel from "../models/device.model.js";
 import deviceBrandModel from "../models/deviceBrand.model.js";
@@ -97,7 +99,10 @@ export const updateDeviceState = async (req, res) => {
   try {
     const { deviceId } = req.params;
     const device = await deviceModel.findById(deviceId);
-    await device.updateOne({ state: updateState(device.state) });
+    await device.updateOne({
+      state: updateState(device.state),
+      lastUpdate: new Date(),
+    });
 
     res.status(200).json({
       device,
@@ -169,17 +174,19 @@ export const repairDevice = async (req = request, res) => {
       _id: replacements.map((rep) => rep.replacementId),
     });
 
+    const indexedReplacements = replacements.reduce((acc, el) => {
+      acc[el.replacementId] = el;
+      return acc
+    }, {});
+
     if (totalPrice >= 0) {
       currentDevice.lastRepairPrice = totalPrice;
     } else {
-      currentDevice.lastRepairPrice = calcPrice(
-        replacementList.map((rep) => {
-          const tempReplacement = replacements.find(
-            ({ replacementId }) => replacementId == rep._id
-          );
-          return { price: rep.price, quantity: tempReplacement.quantity };
-        })
-      );
+      const mapedReplacements = replacementList.map((rep) => {
+        const tempReplacement = indexedReplacements[rep._id.toString()]
+        return { price: rep.price, quantity: tempReplacement.quantity };
+      });
+      currentDevice.lastRepairPrice = calcPrice(mapedReplacements);
     }
 
     currentDevice.history.unshift({
@@ -229,18 +236,23 @@ export const getDeviceStadistics = async (req, res) => {
     );
     const repairedToday = await getRerpairedByDate(new Date());
 
-    const earningsToday = getEarnings(repairedToday.filter(device => device.state ===STATES_ENUM.Delivered))
+    const earningsToday = await getEarnings();
 
-    return res
-      .status(200)
-      .json({
-        pending: pendingRepairs.length,
-        ready: readyDevices.length,
-        repairedToday: repairedToday.length,
-        earningsToday
-      });
+    return res.status(200).json({
+      pending: pendingRepairs.length,
+      ready: readyDevices.length,
+      repairedToday: repairedToday.length,
+      earningsToday,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: error.message });
   }
+};
+
+export const getStadistics = async (req, res) => {
+  const result = await getWeekStadistics();
+  res.status(200).json({
+    result,
+  });
 };

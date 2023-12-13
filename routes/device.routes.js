@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { addDevice, generateId, getDevices, getDevice, repairDevice, updateDeviceState, getDeviceBrands, getNumberCode, getDeviceStadistics } from '../controllers/device.controller.js';
+import { addDevice, generateId, getDevices, getDevice, repairDevice, updateDeviceState, getDeviceBrands, getNumberCode, getDeviceStadistics, getStadistics } from '../controllers/device.controller.js';
 import { validateJWT } from '../middlewares/validateJWT.js';
 
 const router = Router();
@@ -21,5 +21,7 @@ router.get("/brands", getDeviceBrands)
 router.get("/number_code", getNumberCode)
 
 router.get("/stadistics", getDeviceStadistics)
+
+router.get("/general_stadistics", getStadistics)
 
 export default router

@@ -14,6 +14,16 @@ export const STATES_ENUM = {
   Delivered: "entregado",
 };
 
+const weekDaysEnum = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+};
+
 export const updateState = (state = "") => {
   return nextState[state.toLowerCase()];
 };
@@ -129,7 +139,9 @@ export const toUpper = (word = "") => {
   const words = word.split(" ");
   let finalWord = "";
   words.forEach((w) => {
-    finalWord += `${w.charAt(0).toUpperCase()}${w.slice(1)}${words.length>1?" ":""}`;
+    finalWord += `${w.charAt(0).toUpperCase()}${w.slice(1)}${
+      words.length > 1 ? " " : ""
+    }`;
   });
   return finalWord;
 };
@@ -146,14 +158,79 @@ export const idGenerator = (quantity, lastNumberCode) => {
 };
 
 export const getRerpairedByDate = async (date) => {
-  const devices = (await deviceModel.find({state:[STATES_ENUM.Repaired, STATES_ENUM.Delivered]}, ["-__v"])).filter(device => device.history[0].repairDate.toDateString() === date.toDateString())
-  return devices
-}
+  const devices = (
+    await deviceModel.find(
+      { state: [STATES_ENUM.Repaired, STATES_ENUM.Delivered] },
+      ["-__v"]
+    )
+  ).filter((device) => {
+    return device.history[0].repairDate.toDateString() === date.toDateString();
+  });
+  return devices;
+};
 
-export const getEarnings = (devices) => {
-  let earning = 0
-  for (let device of devices){
-    earning += device.lastRepairPrice
+export const getEarnings = async () => {
+  const devices = (
+    await deviceModel.find({ state: [STATES_ENUM.Delivered] }, ["-__v"])
+  ).filter((device) => {
+    return device.lastUpdate.toDateString() === new Date().toDateString();
+  });
+
+  let earning = 0;
+  for (let device of devices) {
+    earning += device.lastRepairPrice;
   }
-  return earning
-}
+  return earning;
+};
+
+export const getWeekStadistics = async () => {
+  const lastWeekRepairs = await getLastWeekRepairs();
+  const monday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.MONDAY
+  ).length;
+  const tuesday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.TUESDAY
+  ).length;
+  const wednesday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.WEDNESDAY
+  ).length;
+  const thursday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.THURSDAY
+  ).length;
+  const friday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.FRIDAY
+  ).length;
+  const saturday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.SATURDAY
+  ).length;
+  const sunday = lastWeekRepairs.filter(
+    (repair) => repair.repairDate.getDay() === weekDaysEnum.SUNDAY
+  ).length;
+
+  return {
+    monday,
+    tuesday,
+    wednesday,
+    thursday,
+    friday,
+    saturday,
+    sunday,
+  };
+};
+
+export const getLastWeekRepairs = async () => {
+  const devices = (
+    await deviceModel.find(
+      { state: [STATES_ENUM.Repaired, STATES_ENUM.Delivered] },
+      ["-__v"]
+    )
+  )
+    .filter(
+      (device) =>
+        new Date(new Date() - device.history[0].repairDate).getTime() /
+          86400000 <=
+        5
+    )
+    .map((device) => device.history[0]);
+  return devices;
+};

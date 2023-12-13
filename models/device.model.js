@@ -45,6 +45,7 @@ const deviceSchema = new mongoose.Schema({
     },
   ],
   lastRepairPrice: { type: Number, default: 0 },
+  lastUpdate: {type: Date}
 });
 
 export default mongoose.model("Device", deviceSchema);
