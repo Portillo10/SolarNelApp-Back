@@ -173,7 +173,7 @@ export const getEarnings = async () => {
   const devices = (
     await deviceModel.find({ state: [STATES_ENUM.Delivered] }, ["-__v"])
   ).filter((device) => {
-    return device.lastUpdate.toDateString() === new Date().toDateString();
+    return device.lastUpdate?.toDateString() === new Date().toDateString();
   });
 
   let earning = 0;
