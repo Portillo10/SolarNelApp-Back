@@ -115,6 +115,24 @@ export const updateDeviceState = async (req, res) => {
   }
 };
 
+export const updateDevice = async (req, res) => {
+
+  const {_id, ...info} = req.body
+  if (!_id) return res.status(400).json({msg:"missing deviceId"})
+  try {
+    const currentDevice = await deviceModel.findByIdAndUpdate(_id, info, {returnDocument: "after"})
+    return res.status(200).json({
+      currentDevice
+    })
+
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message
+    })
+  }
+
+}
+
 export const getDevices = async (req, res) => {
   try {
     const devices = await getAllDevices();

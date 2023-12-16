@@ -87,7 +87,7 @@ export const formatHistory = async (history = []) => {
     return {
       ...restRepair._doc,
       replacements: finalReplacementList,
-      author: toUpper(finalAuthor.firstname) + toUpper(finalAuthor.lastname),
+      author: toUpper(finalAuthor.firstname) + " " + toUpper(finalAuthor.lastname),
     };
   });
 };

@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { addDevice, generateId, getDevices, getDevice, repairDevice, updateDeviceState, getDeviceBrands, getNumberCode, getDeviceStadistics, getStadistics } from '../controllers/device.controller.js';
+import { addDevice, generateId, getDevices, getDevice, repairDevice, updateDeviceState, getDeviceBrands, getNumberCode, getDeviceStadistics, getStadistics, updateDevice } from '../controllers/device.controller.js';
 import { validateJWT } from '../middlewares/validateJWT.js';
 
 const router = Router();
@@ -8,11 +8,13 @@ router.post("/", addDevice)
 
 router.post("/repair", [validateJWT], repairDevice)
 
-router.get("/one/:deviceId", getDevice)
+router.put("/update_state/:deviceId", updateDeviceState)
+
+router.put("/update", updateDevice)
 
 router.get("/all", getDevices)
 
-router.put("/update_state/:deviceId", updateDeviceState)
+router.get("/one/:deviceId", getDevice)
 
 router.get("/getid", generateId)
 
