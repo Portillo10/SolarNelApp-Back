@@ -21,7 +21,7 @@ export class Server {
     this.routes();
     this.dbConnection();
 
-    this.interval = setInterval(this.renewSession, 10000);
+    this.interval = setInterval(this.renewSession, 1000 * 60 * 15);
   }
 
   renewSession() {
@@ -31,8 +31,6 @@ export class Server {
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
       console.log(today.toDateString(), "renew hour:", today.getHours());
       axios.get("https://solarnelapp-back.onrender.com/renew").then(resp => console.log(resp.data));
-      // .then((resp) => resp.json())
-      // .then((resp) => console.log(resp));
     }
   }
 
