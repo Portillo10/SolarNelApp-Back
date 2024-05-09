@@ -5,15 +5,15 @@ import {
   authRoutes,
   deviceRoutes,
   replacementRoutes,
+  pointRoute,
 } from "../routes/index.routes.js";
 import cookieParser from "cookie-parser";
 import axios from "axios";
 
-const workDays = [1, 2, 3, 4, 5, 6]
+const workDays = [1, 2, 3, 4, 5, 6];
 
 export class Server {
   constructor() {
-
     this.app = express();
     this.port = process.env.PORT;
 
@@ -25,13 +25,14 @@ export class Server {
   }
 
   renewSession() {
-    const today = new Date(2024, 4, 9, 16, 30)
-    const currentDay = today.getDay()
-    const currentHour = today.getHours()
+    const today = new Date(2024, 4, 9, 16, 30);
+    const currentDay = today.getDay();
+    const currentHour = today.getHours();
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
-      console.log(today.toDateString())
-      console.log(today.getHours())
-      // axios.get("https://solarnelapp-back.onrender.com")
+      console.log(today.toDateString(), "renew hour:", today.getHours());
+      axios.get("https://solarnelapp-back.onrender.com/renew").then(resp => console.log(resp.data));
+      // .then((resp) => resp.json())
+      // .then((resp) => console.log(resp));
     }
   }
 
@@ -39,6 +40,7 @@ export class Server {
     this.app.use("/device", deviceRoutes);
     this.app.use("/replacement", replacementRoutes);
     this.app.use("/auth", authRoutes);
+    this.app.use("/renew", pointRoute);
   }
 
   middlewares() {

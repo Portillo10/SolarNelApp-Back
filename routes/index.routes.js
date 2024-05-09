@@ -7,7 +7,7 @@ import { Router } from 'express'
 
 const pointRoute = Router()
 
-pointRoute.get("/renew", renewSession)
+pointRoute.get("/", renewSession)
 
 export {
   deviceRoutes,
