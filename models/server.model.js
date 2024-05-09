@@ -30,7 +30,13 @@ export class Server {
     const currentHour = today.getHours();
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
       console.log(today.toDateString(), "renew hour:", today.getHours());
-      axios.get("https://solarnelapp-back.onrender.com/renew").then(resp => console.log(resp.data));
+      try {
+        axios
+          .get("https://solarnelapp-back.onrender.com/renew")
+          .then((resp) => console.log(resp.data));
+      } catch (error) {
+        console.log("Algo falló mientras se intentaba renovar la sesión")
+      }
     }
   }
 
