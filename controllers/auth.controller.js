@@ -8,6 +8,7 @@ export const login = async (req = request, res = response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
+
     return res.status(400).json({ msg: "missing username or password" });
   }
   try {

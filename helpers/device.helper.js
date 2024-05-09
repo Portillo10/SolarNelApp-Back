@@ -14,7 +14,7 @@ export const STATES_ENUM = {
   Delivered: "entregado",
 };
 
-const weekDaysEnum = {
+export const weekDaysEnum = {
   SUNDAY: 0,
   MONDAY: 1,
   TUESDAY: 2,

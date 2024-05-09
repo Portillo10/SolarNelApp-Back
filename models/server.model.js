@@ -1,29 +1,50 @@
 import express from "express";
 import cors from "cors";
-import {dbConnection} from '../db/dbConecction.js'
-import {authRoutes, deviceRoutes, replacementRoutes} from '../routes/index.routes.js'
-import cookieParser from 'cookie-parser'
+import { dbConnection } from "../db/dbConecction.js";
+import {
+  authRoutes,
+  deviceRoutes,
+  replacementRoutes,
+} from "../routes/index.routes.js";
+import cookieParser from "cookie-parser";
+import axios from "axios";
+
+const workDays = [1, 2, 3, 4, 5, 6]
 
 export class Server {
   constructor() {
+
     this.app = express();
     this.port = process.env.PORT;
 
-    this.middlewares()
-    this.routes()
-    this.dbConnection()
+    this.middlewares();
+    this.routes();
+    this.dbConnection();
+
+    this.interval = setInterval(this.renewSession, 10000);
+  }
+
+  renewSession() {
+    const today = new Date(2024, 4, 9, 16, 30)
+    const currentDay = today.getDay()
+    const currentHour = today.getHours()
+    if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
+      console.log(today.toDateString())
+      console.log(today.getHours())
+      // axios.get("https://solarnelapp-back.onrender.com")
+    }
   }
 
   routes() {
-    this.app.use("/device", deviceRoutes)
-    this.app.use("/replacement", replacementRoutes)
-    this.app.use("/auth", authRoutes)
+    this.app.use("/device", deviceRoutes);
+    this.app.use("/replacement", replacementRoutes);
+    this.app.use("/auth", authRoutes);
   }
 
   middlewares() {
-    this.app.use(cors({credentials:true, origin: true}));
+    this.app.use(cors({ credentials: true, origin: true }));
 
-    this.app.use(cookieParser())
+    this.app.use(cookieParser());
 
     // lecture del body
     this.app.use(express.urlencoded({ extended: false }));
@@ -41,9 +62,9 @@ export class Server {
 
   dbConnection() {
     try {
-      dbConnection()
+      dbConnection();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 }
