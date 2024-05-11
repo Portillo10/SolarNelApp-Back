@@ -27,7 +27,8 @@ export class Server {
   renewSession() {
     const today = new Date();
     const currentDay = today.getDay();
-    const currentHour = today.getHours();
+    const currentHour = today.getHours() - 5;
+    console.log(today.toDateString())
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
       console.log(today.toDateString(), "renew hour:", today.getHours());
       axios
