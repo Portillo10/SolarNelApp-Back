@@ -30,7 +30,7 @@ export class Server {
     const currentHour = today.getHours() - 5;
     console.log(today.toDateString())
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {
-      console.log(today.toDateString(), "renew hour:", today.getHours());
+      console.log(today.toDateString(), "renew hour:", currentHour);
       axios
         .get("https://solarnelapp-back.onrender.com/renew")
         .then((resp) => console.log(resp.data))
