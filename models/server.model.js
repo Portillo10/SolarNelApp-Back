@@ -25,7 +25,7 @@ export class Server {
   }
 
   renewSession() {
-    const today = new Date(2024, 4, 9, 16, 30);
+    const today = new Date();
     const currentDay = today.getDay();
     const currentHour = today.getHours();
     if (workDays.includes(currentDay) && currentHour < 20 && currentHour > 7) {

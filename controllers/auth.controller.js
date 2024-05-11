@@ -35,6 +35,30 @@ export const login = async (req = request, res = response) => {
   } catch (error) {}
 };
 
+export const changePassword = async (req, res) => {
+  const { userInfo } = req.body;
+  console.log(userInfo)
+  try {
+    const userExist = await userModel.findOne({
+      username: userInfo.username,
+    });
+
+    if (!userExist) return res.status(204).json({ msg: "User does not exist" });
+    const salt = bcrypt.genSaltSync();
+
+    userExist.password = bcrypt.hashSync(userInfo.password, salt);
+
+    await userExist.save();
+
+    return res.status(200).json({
+      userExist,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+}
+
 export const register = async (req, res) => {
   const { userInfo } = req.body;
   try {
